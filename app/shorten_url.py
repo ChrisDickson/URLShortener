@@ -1,8 +1,9 @@
 from flask import (
-    Blueprint, flash, render_template, request
+    Blueprint, flash, render_template, request, redirect
 )
 import random
 import string
+import re
 from app.db import get_db
 
 bp = Blueprint('shorten_url', __name__, url_prefix='/shorten_url')
@@ -16,10 +17,18 @@ def shorten_url():
 
         req_json = request.get_json()
         url = req_json['url']
+
         db = get_db()
 
         if not url:
             error = 'Please enter a URL to shorten.'
+
+        elif url.startswith('https://') or url.startswith('http://') is False:
+            url = 'http://'+url
+
+        elif re.match('(https|http)(\:\/\/www)(\.)(.+)(\.)(\w{2,3})(.+)', url) is False:
+            error = 'Please enter an valid URL.'
+            
         elif db.execute(
             'SELECT id FROM urls WHERE url = ?', (url,)
         ).fetchone() is not None:
@@ -48,7 +57,7 @@ def return_original_url(short_url):
         'SELECT url FROM urls WHERE short = ?', (short_url,)
     )
 
-    return original_url
+    return redirect(original_url)
 
 
 def generate_shortened_url():
