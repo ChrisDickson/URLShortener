@@ -1,18 +1,57 @@
 from flask import (
-    Blueprint, flash, g, redirect, render_template, request, session, url_for
+    Blueprint, flash, render_template, request
 )
+import random
+import string
 from app.db import get_db
 
+bp = Blueprint('shorten_url', __name__, url_prefix='/shorten_url')
 
 
-@app.route('/shorten_url', methods=['POST'])
+@bp.route('/', methods=['POST'])
 # Returns the shortened URL - Stores submitted URL in DB, generating unique key, returns unique key on end of domain
 def shorten_url():
-    req_json = request.get_json()
-    url = req_json['url']
+    if request.method == 'POST':
+        shortened_url = ''
+
+        req_json = request.get_json()
+        url = req_json['url']
+        db = get_db()
+
+        if not url:
+            error = 'Please enter a URL to shorten.'
+        elif db.execute(
+            'SELECT id FROM urls WHERE url = ?', (url,)
+        ).fetchone() is not None:
+            shortened_url = db.execute(
+                'SELECT short FROM urls WHERE url = ?', (url,)
+            )
+            return render_template('/short_url')
+
+        if error is None:
+            db.execute('INSERT INTO urls (url, shortened_url) VALUES ? ?',
+                (url, generate_shortened_url())
+            )
+            db.commit()
+            return render_template('/short_url', shortened_url, url)
+
+        flash(error)
+
+    return render_template('short_url')
 
 
-# Gets original URL using unique code at end of shortened URL to search DB
+@bp.route('/<short_url>')
 def return_original_url(short_url):
-    print('test')
-    return
+    db = get_db()
+
+    original_url = db.execute(
+        'SELECT url FROM urls WHERE short = ?', (short_url,)
+    )
+
+    return original_url
+
+
+def generate_shortened_url():
+    shortened_url = ''.join(random.choice(string.ascii_uppercase, string.ascii_lowercase, string.digits) for _ in range(8))
+
+    return shortened_url
