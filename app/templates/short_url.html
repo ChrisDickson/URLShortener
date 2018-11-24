@@ -6,8 +6,10 @@
 </head>
 <body>
 <p>
-    The URL you submitted was: {% url %}
-    The shortened URL generated is: {% shortened_url %}
+    {% block %}
+        The URL you submitted was: {% url %}
+        The shortened URL generated is: {% shortened_url %}
+    {% endblock %}
 </p>
 
 </body>

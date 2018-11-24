@@ -23,15 +23,14 @@ def create_app(test_config=None):
     except OSError:
         pass
 
-    # a simple page that says hello
     @app.route('/')
-    def hello():
+    def index():
         return render_template('index.html')
 
-    from . import db
-    db.start_app(app)
+    from app import db
+    db.init_db(app)
 
-    from . import shorten_url
-    app.register_blueprint(shorten_url.bp)
+    from app import short_url
+    app.register_blueprint(short_url.bp)
 
     return app
