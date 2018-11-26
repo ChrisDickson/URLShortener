@@ -41,10 +41,6 @@ def shorten_url():
 
         if re.match('(www.)(.*)\.(\D{2,})', url_parse.netloc):
 
-            if len(url) > 200:
-                error = "URL exceeds maximum length of 200 characters."
-                return render_template('/short_url.html', error=error)
-
             if db.check_url_in_db(url) is False:
                 short_url = db.get_short(url)
                 return render_template('/short_url.html', short_url=short_url, url=url)
