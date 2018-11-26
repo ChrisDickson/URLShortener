@@ -3,7 +3,8 @@ from flask import (
 )
 import random
 import string
-import validators
+import re
+from urllib.parse import urlparse
 from . import db
 
 bp = Blueprint('short_url', __name__)
@@ -14,29 +15,44 @@ bp = Blueprint('short_url', __name__)
 def shorten_url():
     if request.method == 'POST':
         req_json = request.get_json()
-        url = req_json['url']
+        if 'url' in req_json:
+            url = req_json['url']
+        else:
+            error = 'Please check your post data - it should be { "url":"www.example-url.com" }'
+            return render_template('/short_url.html', error=error)
+
         if not url:
             error = 'Please enter a URL to shorten.'
             return render_template('/short_url.html', error=error)
 
-        elif validators.url(url) is False:
-            error = 'Please enter an valid URL.'
-            return render_template('/short_url.html', error=error)
+        url_parse = urlparse(url)
+        # error = 'Please enter an valid URL.'
+        # return render_template('/short_url.html', error=error)
 
         # False here means URL given is in the database already,
         # and we can retrieve and return the shortened one that already exists
 
-        if url.startswith('http://') is False and url.startswith('https://') is False:
+        if bool(url_parse.scheme) is False:
             url = 'http://' + url
 
-        if db.check_url_in_db(url) is False:
-            short_url = db.get_short(url)
-            return render_template('/short_url.html', short_url=short_url, url=url)
+        if bool(url_parse.netloc) is False:
+            error = 'Please enter a URL to shorten.'
+            return render_template('/short_url.html', error=error)
+
+        if re.match('(www.)(.*)\.(\D{2,})', url_parse.netloc):
+
+            if db.check_url_in_db(url) is False:
+                short_url = db.get_short(url)
+                return render_template('/short_url.html', short_url=short_url, url=url)
+
+            else:
+                short_url = generate_shortened_url()
+                db.insert_urls(short_url, url)
+                return render_template('/short_url.html', short_url=short_url, url=url)
 
         else:
-            short_url = generate_shortened_url()
-            db.insert_urls(short_url, url)
-            return render_template('/short_url.html', short_url=short_url, url=url)
+            error = 'Please enter a valid url.'
+            return render_template('/short_url.html', error=error)
 
 
 @bp.route('/url/<short>', methods=['GET'])
