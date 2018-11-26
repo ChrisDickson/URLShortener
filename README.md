@@ -12,7 +12,7 @@ To run this service you should:
 e.g., `C:\PythonCode\URLShortener`
 3. Enter the command: `set FLASK_APP=app`
 4. Enter the command: `flask run`
-5. JSON data should be sent to http://127.0.0.1:5000/short_url in the format:    
+5. JSON data should be sent to `http://127.0.0.1:5000/short_url` in the format:    
 `{    
         "url":"www.example-url.com"
  }`

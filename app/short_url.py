@@ -46,7 +46,7 @@ def shorten_url():
                 return render_template('/short_url.html', error=error)
 
             if db.check_url_in_db(url) is False:
-                short_url = db.get_short(url)
+                short_url = 'http://127.0.0.1:5000/url/' + db.get_short(url)
                 return render_template('/short_url.html', short_url=short_url, url=url)
 
             else:
