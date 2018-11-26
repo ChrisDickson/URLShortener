@@ -1,5 +1,3 @@
-DROP TABLE IF EXISTS url;
-
 CREATE TABLE `urls` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `url` varchar(200) NOT NULL,

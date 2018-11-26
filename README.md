@@ -2,6 +2,9 @@
 #### Author: Christopher Dickson   
 #### GitHub Repo: https://github.com/ChrisDickson/URLShortener
 
+The application requires a MySQL database. A script to create the required table can be found in:
+`instance/url_schema.sql`
+
 To run this service you should:
 
 1. Clone the git repo, or otherwise download the files. 
@@ -11,5 +14,5 @@ e.g., `C:\PythonCode\URLShortener`
 4. Enter the command: `flask run`
 5. JSON data should be sent to http://127.0.0.1:5000/short_url in the format:    
 `{    
-    "url":"www.example-url.com"
+        "url":"www.example-url.com"
  }`
