@@ -15,36 +15,33 @@ def shorten_url():
     if request.method == 'POST':
         req_json = request.get_json()
         url = req_json['url']
-
-        error = None
-
         if not url:
             error = 'Please enter a URL to shorten.'
-            print(error)
+            return render_template('/short_url.html', error=error)
 
         elif validators.url(url) is False:
             error = 'Please enter an valid URL.'
-            print(error)
+            return render_template('/short_url.html', error=error)
 
-        # True here means URL given is in the database already,
+        # False here means URL given is in the database already,
         # and we can retrieve and return the shortened one that already exists
-        elif db.check_url_in_db(url) is True:
-            short_url = db.get_short(url)
 
+        if url.startswith('http://') is False and url.startswith('https://') is False:
+            url = 'http://' + url
+
+        if db.check_url_in_db(url) is False:
+            short_url = db.get_short(url)
             return render_template('/short_url.html', short_url=short_url, url=url)
 
-        if error is None:
+        else:
             short_url = generate_shortened_url()
             db.insert_urls(short_url, url)
-
             return render_template('/short_url.html', short_url=short_url, url=url)
-        else:
-            return render_template('/short_url.html',error=error)
 
 
 @bp.route('/url/<short>', methods=['GET'])
 def return_original_url(short):
-    original_url = db.get_original()
+    original_url = db.get_original(short)
     return redirect(original_url)
 
 
